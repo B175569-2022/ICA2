@@ -15,11 +15,19 @@ def give_dir():
     return "Working directory changed to " + dir
   return "Working directoty remained at " + dir
   
-# get protein family, taxonomic group from user
+# get protein family, taxonomic group / taxonid from user
+# returns dict with keys according to input: "taxon_name" or "taxonid"
 def give_prot_taxon():
   protein = input("Write the protein family you want to search for:").lower()
-  taxon   = input("Write the taxonomic group you want to search for:").lower()
-  names = {"protein": protein, "taxon": taxon}
-  return  names   
-  
+  q1 = input("Do you want to use a taxonid or a taxonomic group name for your search? Press 1 for taxonid or 2 for taxonomic group name:") # returns str
+  if (q1 == '1'):
+    taxonid = input("Write the taxonid you want to search for:").lower()
+    prot_taxon = {"protein": protein, "taxonid": taxonid}
+    return  prot_taxon
+  elif (q1 == '2'):
+    taxon_name = input("Write the taxonomic group you want to search for:").lower()
+    prot_taxon = {"protein": protein, "taxon_name": taxon_name}
+    return  prot_taxon 
+  else:
+    return "Please try again giving correct input(1 for taxonid or 2 for taxonomic group name):"
 # 
