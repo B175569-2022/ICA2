@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 
-# modules
-import os
-import subprocess
-
+# import modules
+import os, subprocess, sys, re
+import pandas as pd
 
 # ask for directory to output files
 def give_dir():
@@ -42,7 +41,11 @@ def run_clustalo(search_out):  # search_out from 01.py
   # clustalo options: --force to overwrite existing output
   full_clustalo_cmd = "clustalo -i " + co_in_fasta + " -o " + co_out_fasta + " -v --force"
   # ask if user wants a max sequence legnth ???
+  ##
+  # run command
   os.system(full_clustalo_cmd)
+  return "\nSequence alignment saved at: " + co_out_fasta
+
 
 
 #if (input("Do you want a max sequence length? (y/n)").lower() == "y"):
@@ -61,7 +64,44 @@ def run_clustalo(search_out):  # search_out from 01.py
 #        break 
 # 
 
+# run plotcon
+def run_plotcon(plotcon_in_fasta, winsize = 4, graph = 'pdf'): # arguement as input file for plotcon
+  # ask winsize
+  q_win = input("Default window size for plotcon is 4.\n(Number of columns to average alignment quality over.)\nThe larger this value is, the smoother the plot will be.\nDo you want to change it? (y/n)").lower()
+  if (q_win == 'y'):
+    winsize = int(input("Please give you new window size:"))
+  elif (q_win == 'n'):
+    print("winsize remains 4")
+  else: 
+    print("Did not understand the answer. Default winsize remains.")
+  # ask output format
+  q_out = input("Default output graph is 'pdf'. Do you want to change that? (y/n)").lower()
+  if (q_out == 'y'):
+    graph = input("Please choose your new graph type (ps, hpgl, hp7470, hp7580, meta, cps, x11, tek, tekt, none, data, xterm, png, gif, pdf, svg):")
+  elif (q_out == 'n'):
+    print("Output graph type remains pdf")
+  else: 
+    print("Did not understand the answer. Default graph type remains.")
+  # full plotcon command
+  full_plotcon_cmd = "plotcon -sequences " + plotcon_in_fasta + " -winsize " + str(winsize) + " -graph "  + str(graph)
+  print("Your plotcon options: " + full_plotcon_cmd)
+  # test if new options are valid
+  if (graph in ("ps", "hpgl", "hp7470", "hp7580", "meta", "cps", "x11", "tek", "tekt", "none", "data", "xterm", "png", "gif", "pdf", "svg") and (winsize > 0) and isinstance(winsize,int)):
+    #print("Your plotcon options: " + full_plotcon_cmd)
+    pass
+  else:
+    sys.exit("Your new options are not right. Please try again using the correct formats.")
+  # run plotcon if all goods 
+  os.system(full_plotcon_cmd)
+  # display graph in firefox browser 
+  firefox_cmd = "firefox plotcon." + graph
+  os.system(firefox_cmd)
+  return 
 
+
+  
+  
+  
 
 
 

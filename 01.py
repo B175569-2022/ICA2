@@ -109,7 +109,32 @@ if (input("Species " + str(top_species) + " is the most frequent with " + str(ma
 
 ################################## align sequences (clustalo) ######################################
 
-try 
+print("\nInitiating clustal omega multiple sequence alignment for the " + str(seqs_count) + " protein sequences found ... \n")
+fun.run_clustalo(search_out)
+
+
+ 
+################################## plot amino acid conservation (plotcon) ######################################
+
+# plotcon input file (created by clustalo)
+plotcon_in_fasta = search_out + "_co_msa.fa"
+print("Initiating plotcon to plot conservation of a protein sequence alignment ... \n")
+
+while True:
+  try:
+    fun.run_plotcon(plotcon_in_fasta)
+  except:
+    # some error giving arguement to plotcon   
+    print("please check your arguements for plotcon are corrent 
+    continue
+  else:
+    # no errors, exit loop
+    break
+
+
+
+
+
 
 
 
