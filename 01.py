@@ -2,7 +2,7 @@
 
 # import modules
 import os, subprocess, sys, re
-# import pandas as pd
+import pandas as pd
 
 # import my functions 
 import functions as fun
@@ -238,8 +238,36 @@ while True: # will run the fun.run_plotcon function until no errors produced (ot
 
 print("\nPlotcon analysis completed! Please close the firefox window to continue.\nGraph also saved in current directory\n")
 
-print("good for now")
-sys.exit()
+#print("good for now")
+#sys.exit()
+
+################################## get alignment information (infoalign) ######################################
+
+# infoalign -sequence pyruvate_dehydrogenase_ascomycete_fungi_co_msa.fa -outfile pyruvate_dehydrogenase_ascomycete_fungi_co_msa.infoalign -noweight -noname
+print("Get basic statistics about the aligned sequences ...\nUsing the infoalign programme\n")
+# input .fa alignment file (from clustalo)
+infoalign_in_fasta = search_out + "_co_msa.fa"
+# output table file (.infoalign)
+infoalign_out = search_out + "_co_msa.infoalign"
+# full infoalign command
+full_infoalign_cmd = "infoalign -sequence " + infoalign_in_fasta + " -outfile " + infoalign_out + " -noweight -noname"
+# run the infoalign programme
+os.system(full_infoalign_cmd)
+
+## pandas
+# read table
+df = pd.read_csv(infoalign_out, sep="\t")
+# sort by ascending % Change (% of changed positions compared to the consensus sequence) 
+df.sort_values('% Change', ascending=True, inplace=True)
+# get a list of the sequences accession numbers, most conserved oredered first
+accs = []
+for index in df.index: # assession numbers are extracted from the df indeces 
+  accs += [re.search(r'.*co_msa.fa:(.*)', index).group(1).rstrip(" ")]
+
+# write ordered table to .tsv file
+df_filename = search_out + "_co_msa.infoalign.sorted"
+df.to_csv(df_filename, sep = "\t", header = True)
+print("Alignment info table, with most conserved sequences on top, saved at " + df_filename + "\n")
 
 ################################ scann against PROSITE database motifs ######################################
 
