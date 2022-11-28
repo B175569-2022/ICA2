@@ -30,6 +30,26 @@ def give_prot_taxon():
   else:
     return "Please try again giving correct input(1 for taxonid or 2 for taxonomic group name):"
 
+# run skipredundant
+def run_skipredundant(skipredundant_in_fasta, skipredundant_out_fasta, skipredundant_out_fasta_red, mode=1, threshold=90.0, minthreshold=20.0, gapopen=10.0, gapextend=0.5):
+  # write full command. options: -in seqs, mode, up threshold, (lower threshold), gapopen, gapextend, out seqs to keep, out seqs not to include
+  # if set mode=2, a lower threshold will be used too
+  if (mode == 1):
+    full_skipredundant_cmd = "skipredundant -sequences " + skipredundant_in_fasta + " -mode " + str(mode) + " -threshold " + str(threshold) + " -gapopen " + str(gapopen) + " -gapextend " + str(gapextend) + " -outseq " + skipredundant_out_fasta + " -redundantoutseq " + skipredundant_out_fasta_red
+    print("full skipredundant command is:\n" + full_skipredundant_cmd + "\n")
+    os.system(full_skipredundant_cmd)
+    return
+  elif (mode == 2):
+    full_skipredundant_cmd = "skipredundant -sequences " + skipredundant_in_fasta + " -mode " + str(mode) + " -maxthreshold " + str(threshold) + " -minthreshold " + str(minthreshold) + " -gapopen " + str(gapopen) + " -gapextend " + str(gapextend) + " -outseq " + skipredundant_out_fasta + " -redundantoutseq " + skipredundant_out_fasta_red
+    print("full skipredundant command is:\n" + full_skipredundant_cmd + "\n")
+    os.system(full_skipredundant_cmd)
+    return
+  else:
+    return "Error, seems that mode was not set properly (1 or 2)"
+  
+
+
+
 
 # run clustalo
 def run_clustalo(search_out):  # search_out from 01.py
@@ -94,18 +114,14 @@ def run_plotcon(plotcon_in_fasta, winsize = 4, graph = 'pdf'): # arguement as in
   # run plotcon if all goods 
   os.system(full_plotcon_cmd)
   # display graph in firefox browser 
-  firefox_cmd = "firefox plotcon." + graph
+  firefox_cmd = "firefox plotcon*" + graph
+  print("Running a firefox window to dispaly the graph. Please close the window to continue.")
   os.system(firefox_cmd)
   return 
 
-
+# run prosite scan
+#def run_prosite_scan(prosite_in_fasta):
   
   
-  
-
-
-
-
-
 
 

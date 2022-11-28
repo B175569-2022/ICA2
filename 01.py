@@ -11,7 +11,9 @@ import functions as fun
 fun.give_dir()
 
 # ask user to define the protein family and taxonomic group (function outputs a dictionary)
-prot_taxon = fun.give_prot_taxon()
+#prot_taxon = fun.give_prot_taxon()
+prot_taxon = {"protein": "pyruvate dehydrogenase", "taxon_name": "ascomycete fungi"}
+
 
 # pyruvate dehydrogenase
 # ascomycete fungi
@@ -33,7 +35,7 @@ if (list(prot_taxon.keys())[1] == "taxon_name"):
   full_search_cmd = esearch + " | " + efetch                     # get full cmd string
   print("Getting fasta sequences ...")
   print("Your esearch | efetch command:\n" + full_search_cmd)
-  os.system(full_search_cmd)
+#  os.system(full_search_cmd)
   print("Done. Your fasta sequences are stored in: " + search_out_fasta)
   # get accession numbers:
   #output_acc = output + ".acc"                                 # accessions file output name (used later)
@@ -78,7 +80,20 @@ for line in fasta:
 
 fasta.close()
 
-### ask user if they want to continue. exit if no sequences are found
+### ask user if number of species is ok
+no_of_species = len(species_dict.keys())                                                  # number of species, each key a different species
+top_species   = [i for i in species_dict if species_dict[i]==max(species_dict.values())]  # most frequent species (may be > 1)
+
+if (input("Your dataset has " + str(no_of_species) + " species. Do you wish to continue? (y/n)").lower() == "n"):
+  print("Exiting ...")
+  sys.exit()
+
+# which species is the most frequent, how many sequences. ask if ok
+if (input("Species " + str(top_species) + " is the most frequent with " + str(max(species_dict.values())) + " sequences in the dataset. Is this ok? (y/n)").lower() == "n"):
+  print("Exiting ...")
+  sys.exit()
+
+### print number of sequences found. Ask user if they want to continue. exit if no sequences are found
 if (seqs_count == 0):
   print("Warning: You have found NO protein sequences. You may want to refine you searching criteria and try again. Exiting analysis ...")
   sys.exit()
@@ -93,26 +108,105 @@ if (q_seqs.lower() == "n"):
   print("Exiting ...")
   sys.exit()
 
-### ask user if number of species is ok
-no_of_species = len(species_dict.keys())                                                  # number of species, each key a different species
-top_species   = [i for i in species_dict if species_dict[i]==max(species_dict.values())]  # most frequent species (may be > 1)
+################################## Ask to remove redundant sequences (skipredundant) ######################################
 
-if (input("Your dataset has " + str(no_of_species) + " species. Do you wish to continue? (y/n)").lower() == "n"):
-  print("Exiting ...")
-  sys.exit()
+# will ask for input until user gives a valid answer (y or n)
+# not 'y' or 'n' => else: sys.exit() => error => except => while loop from the beginning => ask for input => ... => corrrect input => break while loop
+while True:
+  q_red = input("Do you want to remove redundant sequences (highly similar) or sequences within a % similarity threshold range? (y/n)\n").lower()
+  #print(q_red)
+  try:
+    if (q_red == "n"):
+      print("Continuing with the full set of " + str(seqs_count) + " protein sequences.\n")
+    elif (q_red == "y"):
+      print("Initiating analysis to remove redundant sequences ...\n")      
+    else:
+      sys.exit()
+  except:
+    print("I didn't understand that. Please type 'y' or 'n'.")
+    continue
+  else:
+    # no errors, exit loop
+    break
 
-# which species is the most frequent, how many sequences. ask if ok
-if (input("Species " + str(top_species) + " is the most frequent with " + str(max(species_dict.values())) + " sequences in the dataset. Is this ok? (y/n)").lower() == "n"):
-  print("Exiting ...")
-  sys.exit()
+### set arguement for skipredundant 
+if (q_red == 'y'):
+  print("will use skipredundant for this ...\n")
+  # give mode arguement & test if input is correct
+  while True:
+    mode = input("Do you want only an upper threshold for sequence similarity? (1)\nOr a lower & upper range of sequence similarity (2)? Press 1 or 2:")
+    try:
+      mode = int(mode) # tests if integer
+    except ValueError:
+      print("I didn't understand that. Please type an integer: 1 or 2.") 
+      continue
+    else:
+      break
+  # give (max) threshold & test if input is correct
+  while True:
+    threshold = input("What is the upper % sequence identity that you want [default=90.0]? Give float number.")
+    try:
+      threshold = float(threshold)
+    except ValueError:
+      print("I didn't understand that. Please type a float number for upper % similarity.")
+      continue
+    else:
+      break
+  # give min threshold if in mode 2 & test if input is correct
+  if (mode == 2):
+    while True:
+      #maxthreshold = threshold
+      minthreshold = input("What is the lower % sequence identity that you want [default=20.0]? Give float number.")
+      try:
+        minthreshold = float(minthreshold)
+      except ValueError:
+        print("I didn't understand that. Please type a float number for lower % similarity.")
+        continue
+      else:
+        break
+  elif (mode == 1):
+      print("No min threshold requested")
+      minthreshold = 20.0 # this will not be used. set as default to avoid errors when calling the function fun.run_skipredundant()
+  # input name(.fa file from search)
+  skipredundant_in_fasta = search_out + ".fa"
+  # output name (.fa file of non-redundant seqs - will be kept)
+  skipredundant_out_fasta = search_out + ".keep"
+  print("will write non-redundant seqs to keep in: " + skipredundant_out_fasta)
+  # output name (.fa file of redundant seqs - will be excluded)
+  skipredundant_out_fasta_red = search_out + ".not.keep"
+  print("will write redundant seqs not to keep in: " + skipredundant_out_fasta_red)
+  # run skipredundant with set parameters
+  print("Running skipredundant. This may take a few minutes ...\n") 
+#  fun.run_skipredundant(skipredundant_in_fasta, skipredundant_out_fasta, skipredundant_out_fasta_red, mode, threshold, minthreshold)
+  print("\nDone filtering redundant sequences!\n")
+  # get number of seqs in nr and redundant sets
+  print("Number of non-redundant sequences to keep:")
+  wc_cmd1 = "grep '^>' " + skipredundant_out_fasta + " | wc -l"
+  os.system(wc_cmd1)
+  print("Number of redundant sequences to be dropped:")
+  wc_cmd2 = "grep '^>' " + skipredundant_out_fasta_red + " | wc -l"
+  os.system(wc_cmd2)
+  q_red_ok = input("Does this look ok? (y/n)").lower()
+  if (q_red_ok == 'n'):
+    print("\nExiting ... You may want to try again, setting less strict / no skipredundant thresholds ...")
+    sys.exit()
+  elif (q_red_ok == 'y'):
+    print("Good. Using the kept sequences for multiple sequences alignment next ...\n")
+
+  
+input("ok for now")
+sys.exit()
 
 
 ################################## align sequences (clustalo) ######################################
 
+### remeber to change input if filtered !!!!
+
 print("\nInitiating clustal omega multiple sequence alignment for the " + str(seqs_count) + " protein sequences found ... \n")
+
 fun.run_clustalo(search_out)
 
-
+print("Clustalo analysis complete\n")
  
 ################################## plot amino acid conservation (plotcon) ######################################
 
@@ -120,16 +214,38 @@ fun.run_clustalo(search_out)
 plotcon_in_fasta = search_out + "_co_msa.fa"
 print("Initiating plotcon to plot conservation of a protein sequence alignment ... \n")
 
-while True:
+while True: # will run the fun.run_plotcon function until no errors produced (otherwise it would exit the script)
   try:
     fun.run_plotcon(plotcon_in_fasta)
   except:
-    # some error giving arguement to plotcon   
-    print("please check your arguements for plotcon are corrent 
+    # some error giving arguement to plotcon 
+    print("\nWarning! Please check your arguements for plotcon are correct. Starting again ...\n")
     continue
   else:
     # no errors, exit loop
     break
+
+print("\nPlotcon analysis completed! Please close the firefox window to continue.\nGraph also saved in current directory\n")
+
+################################ scann against PROSITE database motifs ######################################
+
+# input file (same as in plotcon)
+prosite_in_fasta = search_out + "_co_msa.fa"
+print("\nInitiating analysis to scan for motifs in the PROSITE db\n")
+
+#while True: # will run the fun.run_prosite function until no errors produced (otherwise it would exit the script)
+#  try:
+#    fun.run_plotcon(plotcon_in_fasta)
+#  except:
+#    # some error giving arguement to plotcon 
+#    print("\nWarning! Please check your arguements for  are correct. Starting again ...\n")
+#    continue
+#  else:
+#    # no errors, exit loop
+#    break
+
+
+
 
 
 
