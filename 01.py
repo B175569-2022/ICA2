@@ -2,7 +2,7 @@
 
 # import modules
 import os, subprocess, sys, re
-import pandas as pd
+# import pandas as pd
 
 # import my functions 
 import functions as fun
@@ -10,9 +10,11 @@ import functions as fun
 # ask user if he wants to change working directory
 fun.give_dir()
 
+################################## Obtain user-defined protein sequences ######################################
+
 # ask user to define the protein family and taxonomic group (function outputs a dictionary)
-#prot_taxon = fun.give_prot_taxon()
-prot_taxon = {"protein": "pyruvate dehydrogenase", "taxon_name": "ascomycete fungi"}
+prot_taxon = fun.give_prot_taxon()
+#prot_taxon = {"protein": "pyruvate dehydrogenase", "taxon_name": "ascomycete fungi"}
 
 
 # pyruvate dehydrogenase
@@ -35,7 +37,7 @@ if (list(prot_taxon.keys())[1] == "taxon_name"):
   full_search_cmd = esearch + " | " + efetch                     # get full cmd string
   print("Getting fasta sequences ...")
   print("Your esearch | efetch command:\n" + full_search_cmd)
-#  os.system(full_search_cmd)
+  os.system(full_search_cmd)
   print("Done. Your fasta sequences are stored in: " + search_out_fasta)
   # get accession numbers:
   #output_acc = output + ".acc"                                 # accessions file output name (used later)
@@ -144,11 +146,11 @@ if (q_red == 'y'):
       break
   # give (max) threshold & test if input is correct
   while True:
-    threshold = input("What is the upper % sequence identity that you want [default=90.0]? Give float number.")
+    threshold = input("What is the upper % sequence identity that you want [default=90.0]? Give float/integer number.")
     try:
       threshold = float(threshold)
     except ValueError:
-      print("I didn't understand that. Please type a float number for upper % similarity.")
+      print("I didn't understand that. Please type a integer/float number for upper % similarity.")
       continue
     else:
       break
@@ -156,11 +158,11 @@ if (q_red == 'y'):
   if (mode == 2):
     while True:
       #maxthreshold = threshold
-      minthreshold = input("What is the lower % sequence identity that you want [default=20.0]? Give float number.")
+      minthreshold = input("What is the lower % sequence identity that you want [default=20.0]? Give float/integer number.")
       try:
         minthreshold = float(minthreshold)
       except ValueError:
-        print("I didn't understand that. Please type a float number for lower % similarity.")
+        print("I didn't understand that. Please type a float/integer number for lower % similarity.")
         continue
       else:
         break
@@ -177,7 +179,7 @@ if (q_red == 'y'):
   print("will write redundant seqs not to keep in: " + skipredundant_out_fasta_red)
   # run skipredundant with set parameters
   print("Running skipredundant. This may take a few minutes ...\n") 
-#  fun.run_skipredundant(skipredundant_in_fasta, skipredundant_out_fasta, skipredundant_out_fasta_red, mode, threshold, minthreshold)
+  fun.run_skipredundant(skipredundant_in_fasta, skipredundant_out_fasta, skipredundant_out_fasta_red, mode, threshold, minthreshold)
   print("\nDone filtering redundant sequences!\n")
   # get number of seqs in nr and redundant sets
   print("Number of non-redundant sequences to keep:")
@@ -193,21 +195,30 @@ if (q_red == 'y'):
   elif (q_red_ok == 'y'):
     print("Good. Using the kept sequences for multiple sequences alignment next ...\n")
 
-  
-input("ok for now")
-sys.exit()
-
-
 ################################## align sequences (clustalo) ######################################
 
-### remeber to change input if filtered !!!!
+# check if sequences have be filtered on the previous step:
+if (q_red == 'n'): # skipredundant was not used
+  # input file (unfiltered .fa file from search)
+  co_in_fasta  = search_out + ".fa"
+  # output file for aligned .fa file
+  co_out_fasta = search_out + "_co_msa.fa"
+  # run clustalo
+  print("\nInitiating clustal omega multiple sequence alignment for all the " + str(seqs_count) + " protein sequences found ... \n") 
+  fun.run_clustalo(co_in_fasta, co_out_fasta)
+  print("Clustalo analysis complete!\n")
+elif (q_red == 'y'): # skipredundant was used
+  # input file (filtered .fa file from skipredundant)
+  co_in_fasta = skipredundant_out_fasta
+  # output file for aligned .fa file
+  co_out_fasta = search_out + "_co_msa.fa"
+  # run clustalo
+  print("\nInitiating clustal omega multiple sequence alignment for the:") 
+  os.system(wc_cmd1)
+  print("filtered (non-redundant) protein sequences remaining ... \n")
+  fun.run_clustalo(co_in_fasta, co_out_fasta)
+  print("Clustalo analysis complete!\n")
 
-print("\nInitiating clustal omega multiple sequence alignment for the " + str(seqs_count) + " protein sequences found ... \n")
-
-fun.run_clustalo(search_out)
-
-print("Clustalo analysis complete\n")
- 
 ################################## plot amino acid conservation (plotcon) ######################################
 
 # plotcon input file (created by clustalo)
@@ -226,6 +237,9 @@ while True: # will run the fun.run_plotcon function until no errors produced (ot
     break
 
 print("\nPlotcon analysis completed! Please close the firefox window to continue.\nGraph also saved in current directory\n")
+
+print("good for now")
+sys.exit()
 
 ################################ scann against PROSITE database motifs ######################################
 

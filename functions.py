@@ -46,43 +46,19 @@ def run_skipredundant(skipredundant_in_fasta, skipredundant_out_fasta, skipredun
     return
   else:
     return "Error, seems that mode was not set properly (1 or 2)"
-  
-
-
-
 
 # run clustalo
-def run_clustalo(search_out):  # search_out from 01.py
+def run_clustalo(co_in_fasta, co_out_fasta):  
 #clustalo -i my-in-seqs.fa -o my-out-seqs.fa -v
   # input name (.fa file from search)
-  co_in_fasta  = search_out + ".fa"
+  #co_in_fasta  = search_out + ".fa"
   # output name for aligned .fa file
-  co_out_fasta = search_out + "_co_msa.fa" 
+  #co_out_fasta = search_out + "_co_msa.fa" 
   # clustalo options: --force to overwrite existing output
   full_clustalo_cmd = "clustalo -i " + co_in_fasta + " -o " + co_out_fasta + " -v --force"
-  # ask if user wants a max sequence legnth ???
-  ##
   # run command
   os.system(full_clustalo_cmd)
   return "\nSequence alignment saved at: " + co_out_fasta
-
-
-
-#if (input("Do you want a max sequence length? (y/n)").lower() == "y"):
-#    while True:
-#      try:
-#        maxseqlen = int(input("Please give you max sequence length: "))
-#        full_clustalo_cmd_maxseqlen = "clustalo -i " + co_in_fasta + " -o " + co_out_fasta + " -v --force --maxseqlen=" + str(maxseqlen)
-#        try:
-#          os.system(full_clustalo_cmd_maxseqlen)
-#        except:
-#          print("clustalo error")
-#      except ValueError: # if not given a number in input()
-#        print("Sorry, Not a valid input. Try again.")
-#        continue #Return to the start of the loop
-#      else:
-#        break 
-# 
 
 # run plotcon
 def run_plotcon(plotcon_in_fasta, winsize = 4, graph = 'pdf'): # arguement as input file for plotcon
@@ -104,7 +80,7 @@ def run_plotcon(plotcon_in_fasta, winsize = 4, graph = 'pdf'): # arguement as in
     print("Did not understand the answer. Default graph type remains.")
   # full plotcon command
   full_plotcon_cmd = "plotcon -sequences " + plotcon_in_fasta + " -winsize " + str(winsize) + " -graph "  + str(graph)
-  print("Your plotcon options: " + full_plotcon_cmd)
+  print("Your plotcon options:\n" + full_plotcon_cmd)
   # test if new options are valid
   if (graph in ("ps", "hpgl", "hp7470", "hp7580", "meta", "cps", "x11", "tek", "tekt", "none", "data", "xterm", "png", "gif", "pdf", "svg") and (winsize > 0) and isinstance(winsize,int)):
     #print("Your plotcon options: " + full_plotcon_cmd)
