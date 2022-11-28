@@ -285,9 +285,12 @@ while True:
 
 # pullseq: create fasta files with one protein seq each -> the top conserved seqs
 # patmatmotifs: for each sequence (each fasta file), run motif scan
+print("The " + str(no_seqs_to_scan) + " most conserved protein sequences are:\n" + str(accs[:no_seqs_to_scan]) + "\nWe will analyse each one seperately:"+ "\n")
+
 count=0
 for acc in accs[:no_seqs_to_scan]: # loop through each of the selected top accession ids
   #create file containing that id (needed for pullseq)
+  print("Starting analysing " + str(acc) + " ...")
   count +=1
   file = str(count) + "_" + acc
   with open(file,"w") as idfile:
@@ -295,6 +298,7 @@ for acc in accs[:no_seqs_to_scan]: # loop through each of the selected top acces
   # extracted .fa file for a single sequence (output of pullseq)
   ps_out = acc + ".fa"
   # full pullseq command + output
+  print("Using the pullseq software to create a single .fa file for the " + str(acc) + " sequence ...")
   pullseq_full_cmd = "/localdisk/data/BPSM/ICA2/pullseq -i " + prosite_in_fasta + " -n " + file + " > " + ps_out
   # call pullseq
   os.system(pullseq_full_cmd)
@@ -303,15 +307,18 @@ for acc in accs[:no_seqs_to_scan]: # loop through each of the selected top acces
   os.system(rmfile)
   ## patmatmotifs
   # output report file
+  print("Initiating patmatmotifs to scan " + str(acc) + " ...")
   pmm_out = acc + ".patmatmotifs"
+  print("Writing results report into " + pmm_out + " file")
   # full patmatmotifs command
   patmatmotifs_full_cmd = "patmatmotifs -sequence " + ps_out + " -outfile " + pmm_out
   # call patmatmotifs for each sequence
   os.system(patmatmotifs_full_cmd)
   
+print("\nFinished scanning the selected sequences!\n")
 
-#to add print lines !!!!
-
+## end of script
+print("Reached the end of the programme! Have a nice day!")
 
 
 
