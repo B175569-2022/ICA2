@@ -269,25 +269,59 @@ df_filename = search_out + "_co_msa.infoalign.sorted"
 df.to_csv(df_filename, sep = "\t", header = True)
 print("Alignment info table, with most conserved sequences on top, saved at " + df_filename + "\n")
 
-################################ scann against PROSITE database motifs ######################################
+################################ scan against PROSITE database motifs (patmatmotifs) ######################################
 
-# input file (same as in plotcon)
-prosite_in_fasta = search_out + "_co_msa.fa"
-print("\nInitiating analysis to scan for motifs in the PROSITE db\n")
+# input file (original or filtered (non-redundant) sequences)
+prosite_in_fasta = co_in_fasta
+print("\nInitiating analysis to scan the most conserved sequences for motifs in the PROSITE db ...")
+# ask how many seqs from the accs list to analyse
+while True:
+  no_seqs_to_scan = input("How many of the most conserved sequences do you want to scan? [default=5]")
+  # test that it is an integer
+  try:
+    no_seqs_to_scan = int(no_seqs_to_scan)
+  except ValueError: 
+    print("Oops! Please provide an integer ...\n")
+    continue
+  else:
+    break
 
-#while True: # will run the fun.run_prosite function until no errors produced (otherwise it would exit the script)
-#  try:
-#    fun.run_plotcon(plotcon_in_fasta)
-#  except:
-#    # some error giving arguement to plotcon 
-#    print("\nWarning! Please check your arguements for  are correct. Starting again ...\n")
-#    continue
-#  else:
-#    # no errors, exit loop
-#    break
+## write accessions to file (to use for pulseq)
+#ids_file = search_out+"_top_ids"
+#with open(ids_file,"w") as acces_file:
+#     for acc in accs[:no_seqs_to_scan]: # only the top no_seqs_to_scan seqs
+#       #print(len(acc+"\n"))
+#       acces_file.write(acc+"\n")
+#       
 
-
-
+# pullseq: create fasta files with one protein seq each -> the top conserved seqs
+# patmatmotifs: for each sequence (each fasta file), run motif scan
+count=0
+for acc in accs[:no_seqs_to_scan]: # loop through each of the selected top accession ids
+  #create file containing that id (needed for pullseq)
+  count +=1
+  file = str(count) + "_" + acc
+  with open(file,"w") as idfile:
+    idfile.write(acc+"\n")
+  #print(file)
+  # extracted .fa file for a single sequence (output of pullseq)
+  ps_out = acc + ".fa"
+  # full pullseq command + output
+  pullseq_full_cmd = "/localdisk/data/BPSM/ICA2/pullseq -i " + prosite_in_fasta + " -n " + file + " > " + ps_out
+  #print(pullseq_full_cmd)
+  # call pullseq
+  os.system(pullseq_full_cmd)
+  # rm temp id file
+  rmfile = "rm " + file
+  os.system(rmfile)
+  ## patmatmotifs
+  # output report file
+  pmm_out = acc + ".patmatmotifs"
+  # full patmatmotifs command
+  patmatmotifs_full_cmd = "patmatmotifs -sequence " + ps_out + " -outfile " + pmm_out
+  # call patmatmotifs for each sequence
+  os.system(patmatmotifs_full_cmd)
+  
 
 
 
