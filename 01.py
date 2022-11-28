@@ -238,9 +238,6 @@ while True: # will run the fun.run_plotcon function until no errors produced (ot
 
 print("\nPlotcon analysis completed! Please close the firefox window to continue.\nGraph also saved in current directory\n")
 
-#print("good for now")
-#sys.exit()
-
 ################################## get alignment information (infoalign) ######################################
 
 # infoalign -sequence pyruvate_dehydrogenase_ascomycete_fungi_co_msa.fa -outfile pyruvate_dehydrogenase_ascomycete_fungi_co_msa.infoalign -noweight -noname
@@ -286,14 +283,6 @@ while True:
   else:
     break
 
-## write accessions to file (to use for pulseq)
-#ids_file = search_out+"_top_ids"
-#with open(ids_file,"w") as acces_file:
-#     for acc in accs[:no_seqs_to_scan]: # only the top no_seqs_to_scan seqs
-#       #print(len(acc+"\n"))
-#       acces_file.write(acc+"\n")
-#       
-
 # pullseq: create fasta files with one protein seq each -> the top conserved seqs
 # patmatmotifs: for each sequence (each fasta file), run motif scan
 count=0
@@ -303,12 +292,10 @@ for acc in accs[:no_seqs_to_scan]: # loop through each of the selected top acces
   file = str(count) + "_" + acc
   with open(file,"w") as idfile:
     idfile.write(acc+"\n")
-  #print(file)
   # extracted .fa file for a single sequence (output of pullseq)
   ps_out = acc + ".fa"
   # full pullseq command + output
   pullseq_full_cmd = "/localdisk/data/BPSM/ICA2/pullseq -i " + prosite_in_fasta + " -n " + file + " > " + ps_out
-  #print(pullseq_full_cmd)
   # call pullseq
   os.system(pullseq_full_cmd)
   # rm temp id file
@@ -323,9 +310,7 @@ for acc in accs[:no_seqs_to_scan]: # loop through each of the selected top acces
   os.system(patmatmotifs_full_cmd)
   
 
-
-
-
+#to add print lines !!!!
 
 
 

@@ -95,9 +95,6 @@ def run_plotcon(plotcon_in_fasta, winsize = 4, graph = 'pdf'): # arguement as in
   os.system(firefox_cmd)
   return 
 
-# run prosite scan
-#def run_prosite_scan(prosite_in_fasta):
-  
-  
+
 
 
